@@ -6,12 +6,16 @@ import struct
 IP_ADDRESS = ''
 PORT_ADRESS = 2000
 
+INPUT1 = 31
+INPUT2 = 35
+OUTPUT1 = 19
+
 if __name__ == '__main__': 
 
    GPIO.setmode(GPIO.BOARD)
-   GPIO.setup(3, GPIO.IN)
-   GPIO.setup(5, GPIO.IN)
-   GPIO.setup(29, GPIO.OUT)
+   GPIO.setup(INPUT1, GPIO.IN)
+   GPIO.setup(INPUT2, GPIO.IN)
+   GPIO.setup(OUTPUT1, GPIO.OUT)
 
    try:  
       # create an INET, STREAMing socket
@@ -36,30 +40,32 @@ if __name__ == '__main__':
          print("data: " + str(variant))
 
          if(variant == 1):
-            print("send data: " + str(GPIO.input(3)))
-            data = GPIO.input(3)
+            print("send data: " + str(GPIO.input(INPUT1)))
+            data = GPIO.input(INPUT1)
             connection.send(struct.pack('!h',data))
-            print("send data: " + str(GPIO.input(5)))
-            data = GPIO.input(5)
+            print("send data: " + str(GPIO.input(INPUT2)))
+            data = GPIO.input(INPUT2)
             connection.send(struct.pack('!h',data))
          else:
             print("activate relais")
-            GPIO.output(29,1)
-            time.sleep(5)
-            GPIO.output(29,0)
-            print("send data: " + str(GPIO.input(3)))
-            data = GPIO.input(3)
+            GPIO.output(OUTPUT1,1)
+            time.sleep(1)
+            print("deactivate relais")
+            GPIO.output(OUTPUT1,0)
+            print("send data: " + str(GPIO.input(INPUT1)))
+            data = GPIO.input(INPUT1)
             connection.send(struct.pack('!h',data))
-            print("send data: " + str(GPIO.input(5)))
-            data = GPIO.input(5)
+            print("send data: " + str(GPIO.input(INPUT2)))
+            data = GPIO.input(INPUT2)
             connection.send(struct.pack('!h',data)) 
          connection.close()
          print("close socket ...")
   
    except KeyboardInterrupt:  
       print "Interrupt by keyboard"  
-   except:  
-      print "Other error or exception occurred!"  
+   except BaseException as e:
+      print('Failed to do something: ' + str(e)) 
+      #print "Other error or exception occurred!"  
    finally:  
       GPIO.cleanup() # this ensures a clean exit  
 

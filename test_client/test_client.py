@@ -8,7 +8,7 @@ PORT_ADRESS = 2000
 if __name__ == '__main__': 
    clientsocket = socket(AF_INET, SOCK_STREAM)                        # create socket
    clientsocket.connect((IP_ADDRESS, PORT_ADRESS))   
-   data = 1
+   data = 2
    clientsocket.send(struct.pack('!h',data))                             # send a default "1"
 
    num_of_byte = 2
