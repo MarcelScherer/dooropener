@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 import time
 import socket 
 import struct
+import requests 
 
 IP_ADDRESS = ''
 PORT_ADRESS = 2000
@@ -25,11 +26,14 @@ if __name__ == '__main__':
       # become a server socket
       server_socket.listen(5)
       print('create socket ...')
-
       while(True):
+         private_connection = False
          connection, client_address = server_socket.accept()                   # wait for connection ...
          print("connection ... " + str(client_address))
-
+         ip = requests.get('https://checkip.amazonaws.com').text.strip()
+         if(str(ip) in client_address):
+            print("local connection")
+            private_connection = True
          num_of_byte = 2
          data_buffer = ""
          while(len(data_buffer) < num_of_byte):                             # read in buffer till all data received
