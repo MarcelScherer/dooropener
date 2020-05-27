@@ -21,19 +21,19 @@ import java.io.IOException
 import java.net.Socket
 import java.util.*
 
+
 const val CHANNEL_ID = "GARAGE_CHANNEL_ID"
 
 class MainActivity : AppCompatActivity() {
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_ACTION_BAR);
         setContentView(R.layout.activity_main)
-        supportActionBar?.hide()
+        var hide = supportActionBar?.hide()
 
         getDoor.setOnClickListener (){
-            getDoor.setText("-")
+            getDoor.text = "-"
             getGarageAsyncTask(getDoor).execute();
         }
 
@@ -56,37 +56,35 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        stopService(Intent(this, notification::class.java))
         // get status
         getGarageAsyncTask(getDoor).execute();
         // Get AlarmManager instance
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         Log.d("Scherer", "Start Timer")
+
+        setDoor.setText("open/close ")
 
         // Intent part
         val intent = Intent(this, AlarmReceiver::class.java)
-        val isWorking:Boolean = (PendingIntent.getBroadcast(this, 1001, intent, PendingIntent.FLAG_NO_CREATE)!=null)
-
-        if(isWorking){
-            Toast.makeText(this, "Broadcast is still working", Toast.LENGTH_LONG).show()
-        }else{
-            Toast.makeText(this, "Broadcast is creating new", Toast.LENGTH_LONG).show()
-            val pendingIntent = PendingIntent.getBroadcast(this, 1001, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            // Alarm time
-            val calendar: Calendar = GregorianCalendar()
+        val pendingIntent = PendingIntent.getBroadcast(this, 123456789, intent, 0);
+        // Alarm time
+        val calendar: Calendar = GregorianCalendar()
+        val now: Calendar = GregorianCalendar()
+        calendar.set(Calendar.HOUR_OF_DAY, 21)
+        calendar.set(Calendar.MINUTE, 0)
+        if(calendar.before(now)){
+            calendar.add(Calendar.DATE, 1);
+        }
+        Toast.makeText(this, "Broadcast creating :" + calendar.get(Calendar.DAY_OF_MONTH).toString()
+            + "." + calendar.get(Calendar.MONTH).toString()
+            + "." + calendar.get(Calendar.YEAR).toString(), Toast.LENGTH_LONG).show()
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        // Set with system Alarm Service
+        // Other possible functions: setExact() / setRepeating() / setWindow(), etc
+        alarmManager.run {
             // Set with system Alarm Service
             // Other possible functions: setExact() / setRepeating() / setWindow(), etc
-            alarmManager.run {
-                calendar.set(Calendar.HOUR_OF_DAY, 21)
-                calendar.set(Calendar.MINUTE, 0)
-                // Set with system Alarm Service
-                // Other possible functions: setExact() / setRepeating() / setWindow(), etc
-                setRepeating(
-                    AlarmManager.RTC_WAKEUP,
-                    calendar.timeInMillis,
-                    AlarmManager.INTERVAL_DAY,
-                    pendingIntent
-                )
-            }
+            setRepeating(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, AlarmManager.INTERVAL_DAY, pendingIntent)
         }
     }
 
