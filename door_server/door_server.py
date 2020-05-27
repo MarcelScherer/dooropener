@@ -21,7 +21,7 @@ if __name__ == '__main__':
    try:  
       # create an INET, STREAMing socket
       server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-      server_socket.settimeout(5)
+      server_socket.settimeout(None)
       # bind the socket to a public host, and a well-known port
       server_socket.bind((IP_ADDRESS, PORT_ADRESS))
       # become a server socket
@@ -33,6 +33,7 @@ if __name__ == '__main__':
             private_connection = False
             connection, client_address = server_socket.accept()                   # wait for connection ...
             print("connection ... " + str(client_address))
+            server_socket.settimeout(10)
             #ip = requests.get('https://checkip.amazonaws.com').text.strip()
             #if(str(ip) in client_address):
             #   print("local connection")
@@ -65,6 +66,7 @@ if __name__ == '__main__':
                print("send data: " + str(GPIO.input(INPUT2)))
                data = GPIO.input(INPUT2)
                connection.send(struct.pack('!h',data)) 
+            server_socket.settimeout(None)
             connection.close()
             print("close socket ...")
          except ValueError:
