@@ -3,14 +3,9 @@ package com.scherer.garage
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
-import android.content.SharedPreferences.Editor
 import android.os.AsyncTask
-import android.preference.PreferenceManager
 import android.util.Log
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import kotlinx.android.synthetic.main.activity_main.*
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -51,6 +46,8 @@ class AlarmReceiver : BroadcastReceiver() {
                 status2 = socket_input.readShort()
                 Log.d("Meine App", "status2:" + status2.toString());
                 socket_input.close();
+                socket_output.close();
+                socket_client.close();
                 Log.d("Meine App", "Close Socket ...");
                 server_response = 2;
             } catch (e: IOException) {
@@ -63,6 +60,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
         override fun onPostExecute(result: Void?) {
             super.onPostExecute(result)
+            val mActivity = MainActivity()
             var notifText : String ? = "default"
             Log.d("Meine App", "post asynctask ...");
             if (server_response == 2 && status1 == open && status2 == close) {
@@ -71,6 +69,8 @@ class AlarmReceiver : BroadcastReceiver() {
                 notifText = "Garage open"
             } else if (server_response == 2) {
                 notifText = "Garage open"
+            }else if(!mActivity.internetAvailable()){
+                notifText = "no internet"
             } else {
                 notifText = "Error"
             }

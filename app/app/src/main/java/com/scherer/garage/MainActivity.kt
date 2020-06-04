@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
 import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
@@ -32,9 +33,19 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         var hide = supportActionBar?.hide()
 
+        val crypto = cryptoHdl("garage", "112358", this)
+
         getDoor.setOnClickListener (){
-            getDoor.text = "-"
-            getGarageAsyncTask(getDoor).execute();
+            getDoor.text = "wait ..."
+            getGarageAsyncTask(getDoor, this).execute();
+        }
+
+        setDoor.setOnClickListener(){
+            setDoor.text = "wait ..."
+            val AsyncDoor = asyncDoorOpen("ms-schneppenbach.spdns.de", 2000, this)
+            if (crypto != null) {
+                AsyncDoor.openDoor(setDoor, this, crypto)
+            }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -58,7 +69,13 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         stopService(Intent(this, notification::class.java))
         // get status
-        getGarageAsyncTask(getDoor).execute();
+        if(internetAvailable()) {
+            getDoor.text = "wait ..."
+            getGarageAsyncTask(getDoor, this).execute();
+        }else{
+            getDoor.setText("no internet")
+        }
+
         // Get AlarmManager instance
         Log.d("Scherer", "Start Timer")
 
@@ -75,9 +92,6 @@ class MainActivity : AppCompatActivity() {
         if(calendar.before(now)){
             calendar.add(Calendar.DATE, 1);
         }
-        Toast.makeText(this, "Broadcast creating :" + calendar.get(Calendar.DAY_OF_MONTH).toString()
-            + "." + calendar.get(Calendar.MONTH).toString()
-            + "." + calendar.get(Calendar.YEAR).toString(), Toast.LENGTH_LONG).show()
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         // Set with system Alarm Service
         // Other possible functions: setExact() / setRepeating() / setWindow(), etc
@@ -88,7 +102,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    class getGarageAsyncTask(private var getTextView : TextView) : AsyncTask<Void, Void, Void>() {
+    class getGarageAsyncTask(private var getTextView : TextView, private var context : Context) : AsyncTask<Void, Void, Void>() {
         var server_response: Int = 0
         var SERVER_IP: String = "ms-schneppenbach.spdns.de"
         var SERVER_PORT: Int = 2000
@@ -111,6 +125,8 @@ class MainActivity : AppCompatActivity() {
                 status2 = socket_input.readShort()
                 Log.d("Meine App", "status2:" + status2.toString());
                 socket_input.close();
+                socket_output.close();
+                socket_client.close();
                 Log.d("Meine App", "Close Socket ...");
                 server_response = 2;
             } catch (e: IOException) {
@@ -130,6 +146,26 @@ class MainActivity : AppCompatActivity() {
             } else if (server_response == 2) {
                 getTextView.setText("Garage open")
             }
+            else
+            {
+                getTextView.setText(server_response.toString() + " " + status1.toString() + " " + status2.toString())
+            }
+            Toast.makeText(context,"Server: " + server_response.toString() + " "
+                    + status1.toString() + " "
+                    + status2.toString(),Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    public fun internetAvailable(): Boolean {
+        return try {
+            val connectivityManager =
+                getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val networkInfo = connectivityManager.activeNetworkInfo
+            networkInfo != null && networkInfo.isConnected
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.d("Meine App", "Fehler beim Internetcheck")
+            false
         }
     }
 }
