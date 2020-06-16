@@ -8,7 +8,7 @@ app and server configuration:<br>
 You have to configure in the app file [MainActivity.kt](app\app\src\main\java\com\scherer\garage\MainActivity.kt) the port and the ip on witch the python server listen.<br>
 <img src="docu/app_config.png" width="300"><br>
 Then you have to configure the same port on that the python server listen for requests in file [door_server.py](door_server\door_server.py).<br>
-<img src="docu/server_config.png" width="300"><br>
+<img src="docu/server_config.png" width="200"><br>
 <br>
 <br>
 wiring:<br>
@@ -32,4 +32,4 @@ my variant (not my best work :-))<br>
 <br>
 <br>
 the layout of the app<br>
-<img src="Screenshot.png" width="300">
+<img src="docu/Screenshot.png" width="300">
