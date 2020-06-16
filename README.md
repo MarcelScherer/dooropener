@@ -5,9 +5,9 @@ If it is not closed it send's a notofication.
 <br>
 <br>
 app and server configuration:<br>
-You have to configure in the app file [MainActivity.kt](app\app\src\main\java\com\scherer\garage\MainActivity.kt) the port and the ip on witch the python server listen.<br>
+You have to configure in the app file [MainActivity.kt](app/app/src/main/java/com/scherer/garage/MainActivity.kt) the port and the ip on witch the python server listen.<br>
 <img src="docu/app_config.png" width="300"><br>
-Then you have to configure the same port on that the python server listen for requests in file [door_server.py](door_server\door_server.py).<br>
+Then you have to configure the same port on that the python server listen for requests in file [door_server.py](door_server/door_server.py).<br>
 <img src="docu/server_config.png" width="200"><br>
 <br>
 <br>
