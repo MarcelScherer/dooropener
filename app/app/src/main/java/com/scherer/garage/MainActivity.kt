@@ -24,8 +24,12 @@ import java.util.*
 
 
 const val CHANNEL_ID = "GARAGE_CHANNEL_ID"
+const val IP_ADRESS = "ms-schneppenbach.spdns.de"
+const val ADRESS_PORT = 2000
 
 class MainActivity : AppCompatActivity() {
+
+    var openButtonState : Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,10 +45,36 @@ class MainActivity : AppCompatActivity() {
         }
 
         setDoor.setOnClickListener(){
-            setDoor.text = "wait ..."
-            val AsyncDoor = asyncDoorOpen("ms-schneppenbach.spdns.de", 2000, this)
-            if (crypto != null) {
-                AsyncDoor.openDoor(setDoor, this, crypto)
+            openButtonState = openButtonState + 1
+            if(openButtonState == 1) {
+                var counter : Int = 5
+                val thread: Thread = object : Thread() {
+                    override fun run() {
+                        try {
+                            while (counter > 0 && openButtonState == 1) {
+                                sleep(1000)
+                                runOnUiThread {
+                                    counter -= 1
+                                    if(counter <= 0 && openButtonState == 1){
+                                        openButtonState = 0
+                                        setDoor.text = "open/close"
+                                    }else if(counter > 0 && openButtonState == 1){
+                                        setDoor.text = "countdown +" + counter.toString()
+                                    }
+                                }
+                            }
+                        } catch (e: InterruptedException) {
+                        }
+                    }
+                }
+
+                thread.start()
+            }else{
+                setDoor.text = "wait ..."
+                val AsyncDoor = asyncDoorOpen(IP_ADRESS, ADRESS_PORT, this)
+                if (crypto != null) {
+                    AsyncDoor.openDoor(setDoor, this, crypto)
+                }
             }
         }
 
@@ -75,6 +105,7 @@ class MainActivity : AppCompatActivity() {
         }else{
             getDoor.setText("no internet")
         }
+        openButtonState = 0
 
         // Get AlarmManager instance
         Log.d("Scherer", "Start Timer")
@@ -104,8 +135,8 @@ class MainActivity : AppCompatActivity() {
 
     class getGarageAsyncTask(private var getTextView : TextView, private var context : Context) : AsyncTask<Void, Void, Void>() {
         var server_response: Int = 0
-        var SERVER_IP: String = "ms-schneppenbach.spdns.de"
-        var SERVER_PORT: Int = 2000
+        var SERVER_IP: String = IP_ADRESS
+        var SERVER_PORT: Int = ADRESS_PORT
         var status1: Short = 0
         var status2: Short = 0
         val open: Short = 0
@@ -149,10 +180,10 @@ class MainActivity : AppCompatActivity() {
             else
             {
                 getTextView.setText(server_response.toString() + " " + status1.toString() + " " + status2.toString())
+                Toast.makeText(context,"Server Error: " + server_response.toString() + " "
+                        + status1.toString() + " "
+                        + status2.toString(),Toast.LENGTH_SHORT).show()
             }
-            Toast.makeText(context,"Server: " + server_response.toString() + " "
-                    + status1.toString() + " "
-                    + status2.toString(),Toast.LENGTH_SHORT).show()
         }
     }
 

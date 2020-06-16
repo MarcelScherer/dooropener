@@ -3,7 +3,9 @@ package com.scherer.garage
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
 import android.os.AsyncTask
+import android.os.Handler
 import android.util.Log
 import androidx.core.content.ContextCompat
 import java.io.DataInputStream
@@ -18,15 +20,22 @@ class AlarmReceiver : BroadcastReceiver() {
         // Is triggered when alarm goes off, i.e. receiving a system broadcast
         var intent = Intent(context, notification::class.java)
 
-        GarageAsyncTask(intent, context).execute();
+        if(!isOnline(context)){
+            val handler = Handler()
+            handler.postDelayed(Runnable {
+                GarageAsyncTask(intent, context).execute();
+            }, 1000)
+        }else {
+            GarageAsyncTask(intent, context).execute();
+        }
         Log.d("Meine App", "start AlramReveicer asyncTask ...");
     }
 
     class GarageAsyncTask(
         private var privateIntent: Intent, private var privateContext: Context ) : AsyncTask<Void, Void, Void>() {
         var server_response: Int = 0
-        var SERVER_IP: String = "ms-schneppenbach.spdns.de"
-        var SERVER_PORT: Int = 2000
+        var SERVER_IP: String = IP_ADRESS
+        var SERVER_PORT: Int = ADRESS_PORT
         var status1: Short = 0
         var status2: Short = 0
         val open: Short = 0
@@ -78,6 +87,14 @@ class AlarmReceiver : BroadcastReceiver() {
             privateIntent.putExtra("NotificationText", notifText);
             ContextCompat.startForegroundService(privateContext, privateIntent );
         }
+    }
+
+    fun isOnline(context: Context): Boolean {
+        val cm =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val netInfo = cm.activeNetworkInfo
+        //should check null because in airplane mode it will be null
+        return netInfo != null && netInfo.isConnected
     }
 }
 

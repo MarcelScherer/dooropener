@@ -17,6 +17,8 @@ INPUT1 = 31
 INPUT2 = 35
 OUTPUT1 = 19
 
+TIMEOUT = 20.0
+
 def main():
 
    GPIO.setmode(GPIO.BOARD)
@@ -24,7 +26,7 @@ def main():
    GPIO.setup(INPUT2, GPIO.IN)
    GPIO.setup(OUTPUT1, GPIO.OUT)
 
-   keyDER = b64decode(open('public.pem').read())
+   keyDER = b64decode(open('/home/pi/garage/public.pem').read())
    print(keyDER)
    pubkey = RSA.importKey(keyDER)
 
@@ -46,9 +48,10 @@ def main():
             server_socket.settimeout(10)
             num_of_byte = 2
             data_buffer = ""
-            while(len(data_buffer) < num_of_byte):                             # read in buffer till all data received
-               print("data leng " + str(len(data_buffer)))
+            deadline = time.time() + TIMEOUT
+            while((len(data_buffer) < num_of_byte) and (time.time() < deadline)):  # read in buffer till all data received
                data_buffer += connection.recv(num_of_byte-len(data_buffer))
+               print(len(data_buffer))
             print("data received ...")
             variant = struct.unpack('!h',data_buffer)[0]
             print("data: " + str(variant))
@@ -67,10 +70,10 @@ def main():
                connection.send(struct.pack('!i',unixtime))
                #-----------------------------------
                chipher = b''
-               server_socket.settimeout(20)
-               while(len(chipher) < 256):                           
+               deadline = time.time() + TIMEOUT
+               while((len(chipher) < 256) and (time.time() < deadline)):  
+                  print(len(chipher))                         
                   chipher += connection.recv(256-len(chipher))
-                  print("data leng " + str(len(chipher)))
                print("encrypt chipher")
                try:
                   hash_value = SHA256.new(str(unixtime))
@@ -78,11 +81,11 @@ def main():
                   verifier = PKCS1_v1_5.new(pubkey)
                   if verifier.verify(hash_value, chipher):
                      print("The signature is authentic.")
-                     #print("activate relais")
-                     #GPIO.output(OUTPUT1,1)
-                     #time.sleep(1)
-                     #print("deactivate relais")
-                     #GPIO.output(OUTPUT1,0)
+                     print("activate relais")
+                     GPIO.output(OUTPUT1,1)
+                     time.sleep(1)
+                     print("deactivate relais")
+                     GPIO.output(OUTPUT1,0)
                   else:
                      print("The signature is not authentic.")
                except Exception as e:
