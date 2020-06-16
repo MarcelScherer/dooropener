@@ -80,7 +80,6 @@ class cryptoHdl() {
         Log.d("cryptoHdl", "write public key to file")
         val publicKeyBytes: ByteArray = Base64.encode(key.getEncoded(), 0)
         val pubKey = String(publicKeyBytes)
-        val codons = pubKey.chunked(65)
         val pem_folder  = context.getExternalFilesDir(null).toString() + File.separator + "garage" + File.separator
         var folder : File = File(pem_folder);
         val pem_file  = pem_folder + File.separator + "public.pem"
@@ -94,12 +93,7 @@ class cryptoHdl() {
             file.createNewFile();
             val datei = FileOutputStream(file.getAbsolutePath().toString(), true)
             val writer = OutputStreamWriter(datei)
-            writer.write("-----BEGIN PUBLIC KEY-----\n")
-            val i: String = ""
-            for (i in codons) {
-                writer.write(i)
-            }
-            writer.write("-----END PUBLIC KEY-----")
+            writer.write(pubKey)
             writer.close()
             datei.close()
         }
