@@ -118,11 +118,12 @@ class MainActivity : AppCompatActivity() {
         // Alarm time
         val calendar: Calendar = GregorianCalendar()
         val now: Calendar = GregorianCalendar()
-        calendar.set(Calendar.HOUR_OF_DAY, 21)
-        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.HOUR_OF_DAY, this.resources.getInteger(R.integer.AlarmHour))
+        calendar.set(Calendar.MINUTE, this.resources.getInteger(R.integer.AlarmMinutes))
         if(calendar.before(now)){
             calendar.add(Calendar.DATE, 1);
         }
+        Log.d("Meine App", "Day ..." + calendar.get(Calendar.DAY_OF_MONTH) + "." + Integer.toString(calendar.get(Calendar.MONTH) + 1));
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         // Set with system Alarm Service
         // Other possible functions: setExact() / setRepeating() / setWindow(), etc
